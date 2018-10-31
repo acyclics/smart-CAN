@@ -10,10 +10,15 @@ contain user functions etc.
 
 /* ========== includes ========== */
 #include "can.h"
+#include <stdio.h>
+#include <stdlib.h>
 /* ============================== */
 
-/* ========== headers ========== */
+/* ========== can bus ========== */
 CAN_HandleTypeDef hcan1;
+/* ============================= */
+
+/* ========== headers ========== */
 CAN_TxHeaderTypeDef can1TxHeader0;
 CAN_TxHeaderTypeDef can1TxHeader1;
 CAN_RxHeaderTypeDef can1RxHeader;
@@ -129,4 +134,94 @@ void CanReceiveMsgProcess(CAN_RxHeaderTypeDef *rxHeader,uint8_t* msg)
 
 }
 /* =========================================== */
+
+
+
+
+
+/* Stuff below this line is the new experimental way to use CAN */
+
+
+
+
+
+/* ========== smart CAN ========== */
+Can** all_rx_devices;
+unsigned int total_rx_device = 0;
+/* =============================== */
+
+/* ========== smart CAN initialize functions ========== */
+void Can_Start(Can device, CAN_HandleTypeDef* hcan)
+{
+	device.canTxHeader.IDE = CAN_ID_STD;
+	device.canTxHeader.StdId = device.StdId;
+	device.canTxHeader.DLC = device.DLC;
+	device.canTxHeader.RTR = device.RTR;
+	
+	device.canFilter.FilterActivation = ENABLE;
+	device.canFilter.FilterMode = CAN_FILTERMODE_IDMASK;
+	device.canFilter.FilterScale = CAN_FILTERSCALE_32BIT;
+	device.canFilter.FilterFIFOAssignment = CAN_FilterFIFO0;
+	device.canFilter.FilterIdHigh = 0x0000;
+	device.canFilter.FilterIdLow = 0x0000;
+	if (hcan == &hcan1)
+		device.canFilter.FilterBank = 0;
+	else
+		device.canFilter.FilterBank = 14;
+	HAL_CAN_ConfigFilter(hcan,&device.canFilter);
+	HAL_CAN_ActivateNotification(hcan,CAN_IT_RX_FIFO0_FULL);
+	HAL_CAN_Start(hcan);
+	
+	Device_Activate_Rx(&device);
+}
+Can create_Device(const uint32_t StdId, const uint32_t IDE, const uint32_t RTR, const uint32_t DLC, const uint32_t rx_StdId)
+{
+	Can device;
+	device.StdId = StdId;
+	device.IDE = IDE;
+	device.RTR = RTR;
+	device.DLC = DLC;
+	device.rx_StdId = rx_StdId;
+	return device;
+}
+/* ==================================================== */
+
+/* ========== smart CAN transmit functions ========== */
+void Can_Transmit(Can device,CAN_HandleTypeDef* hcan,uint8_t* canMsg)
+{
+	HAL_CAN_AddTxMessage(hcan,&device.canTxHeader,canMsg,(void*)CAN_TX_MAILBOX0);
+}
+/* ================================================== */
+
+/* ========== smart CAN receive functions ========== */
+void Device_Activate_Rx(Can* device)
+{
+	Can** new_rx_device = realloc(all_rx_devices, ++total_rx_device);
+	if (new_rx_device == NULL)
+	{
+		// error check
+	}
+	else
+	{
+		all_rx_devices = new_rx_device;
+		all_rx_devices[total_rx_device-1] = device;
+	}
+}
+void Device_Receive(CAN_RxHeaderTypeDef* canRxHeader,uint8_t* canRxMsg)
+{
+	for (int i = 0; i < total_rx_device; ++i)
+	{
+		if (canRxHeader->StdId == all_rx_devices[i]->rx_StdId)
+		{
+			all_rx_devices[i]->data = canRxMsg;
+		}
+	}
+}
+void Can_Receive(CAN_HandleTypeDef* hcan, uint8_t* canRxMsg)	// place this in can1/2_rx_isr
+{
+	CAN_RxHeaderTypeDef canRxHeader;
+	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&canRxHeader,canRxMsg);
+	Device_Receive(&canRxHeader, canRxMsg);
+}
+/* ================================================= */
 
