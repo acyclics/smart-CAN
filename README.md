@@ -128,4 +128,4 @@ All of the above information simply tells you how to implement CAN, which is mad
 where you will learn lots about CAN and the CAN HAL library.
 
 # Trouble-shooting
-If you encounter any issues, open an issue (here)[https://github.com/impeccableaslan/smart-CAN/issues] which will be resolved in a timely manner.
+If you encounter any issues, open an issue [here](https://github.com/impeccableaslan/smart-CAN/issues) which will be resolved in a timely manner.
