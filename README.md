@@ -2,6 +2,8 @@
 
 Suitable for the stm32f4xx series, smart CAN is an easy to use, robust, CAN implementation. You can easily add devices to use the CAN protocol and the code takes care of all the devices itself.
 
+Currently, smart CAN is located at the Stable (experimented) branch on Github.
+
 # How to use
 
 Smart CAN is made to be easy to use, so naturally, there aren't that many steps to take before we get CAN running on your stm32. But, depending on your electronic device, the inputs to the functions will change so take care.
