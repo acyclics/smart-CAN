@@ -59,9 +59,6 @@ typedef struct Can
 	/* ========== headers ========== */
 	CAN_TxHeaderTypeDef canTxHeader;
 	
-	/* ========== filters ========== */
-	CAN_FilterTypeDef canFilter;
-	
 	/* ========== settings ========== */
 	uint32_t StdId;
 	uint32_t IDE;
@@ -69,14 +66,16 @@ typedef struct Can
 	uint32_t DLC;
 	uint32_t rx_StdId;
 	uint8_t* data;
+	int rx_buffer_size;
 } Can;
 /* =============================== */
 
 /* ========== smart CAN functions ========== */
-void Can_Start(Can device, CAN_HandleTypeDef* hcan);
-Can create_Device(const uint32_t StdId, const uint32_t IDE, const uint32_t RTR, const uint32_t DLC, const uint32_t rx_StdId);
-void Can_Transmit(Can device,CAN_HandleTypeDef* hcan,uint8_t* canMsg);
+void Device_Initialize(Can* device,const uint32_t StdId, const uint32_t IDE, const uint32_t RTR, const uint32_t DLC, const uint32_t rx_StdId, const int rx_buffer_size);
+void Can_Transmit(Can* device,CAN_HandleTypeDef* hcan,uint8_t* canMsg);
 void Can_Receive(CAN_HandleTypeDef* hcan, uint8_t* canRxMsg);	// place this in can1/2_rx_isr
 void Device_Activate_Rx(Can* device);
+void test_smart_can(Can* device, CAN_HandleTypeDef* hcan,int16_t cm1_iq,int16_t cm2_iq,int16_t cm3_iq,int16_t cm4_iq);
+void Device_ResizeRxBuffer(Can* device, int rx_buffer_size);
 
 #endif
