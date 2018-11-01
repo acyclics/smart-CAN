@@ -18,7 +18,7 @@ Smart CAN take cares of communicating and receiving for you. The variable "Can" 
 #include "can.h"
 ```
 
-2. Create a Can variable.
+2. Create a Can variable. The great thing about smart CAN is that you can treat the electronic device as a "Can object", it's basically plug and play so you can get CAN up and running hassle free. Therefore, from now on you can treat each "Can variable" as your electronic device.
 ```c
 Can device;
 ```
@@ -79,7 +79,53 @@ canMsg: the message to be transmitted to the electronic device. This is a pointe
 ```
 
 # Example
+```c
+int main(void)
+{
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
+  
+  // MX_CAN1_Init() is the cubemx generated function to initialize CAN1
+  MX_CAN1_Init();
+  // initialize smart CAN
+  CAN_Initialize();
+  
+  MX_TIM2_Init();
+  MX_TIM12_Init();
+  MX_TIM6_Init();
+  MX_TIM3_Init();
+  HAL_TIM_PWM_Init(&htim2);
+  HAL_TIM_PWM_Init(&htim12);
+  HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start_IT(&htim2);
+
+  // create and initialize Can variable here. In this example, the electronic device is a motor
+  Can motor;
+  Device_Initialize(&motor,0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x201, 8);
+  
+  // create message to be sent here. It doesn't matter if you don't understand it, just know that you would've to fill in the 	// array somehow before sending the message (which should be contained by the array) through CAN.
+  canTxMsg0[0] = (uint8_t)(5000 >> 8);
+  canTxMsg0[1] = (uint8_t)5000;
+  canTxMsg0[2] = (uint8_t)(5000 >> 8);
+  canTxMsg0[3] = (uint8_t)5000;
+  canTxMsg0[4] = (uint8_t)(5000 >> 8);
+  canTxMsg0[5] = (uint8_t)5000;
+  canTxMsg0[6] = (uint8_t)(5000 >> 8);
+  canTxMsg0[7] = (uint8_t)5000;
+
+  while (1)
+  {
+  	HAL_Delay(50);
+	// transmit message to the electronic device in a loop so we can keep updating the electronic device. In this case, it 	       // is a motor so we want to keep sending messages to it to tell it how fast it should spin 
+	Can_Transmit(&motor, &hcan1, canTxMsg0);
+  }
+}
+```
 
 # More info
+All of the above information simply tells you how to implement CAN, which is made even easier with smart CAN. But, if you want to actually learn CAN, or to explore ST-electronics HAL implementation of CAN, then start with visting https://impeccableaslan.github.io/communication_protocols/can/can.html
+where you will learn lots about CAN and the CAN HAL library.
 
 # Trouble-shooting
+If you encounter any issues, open an issue (here)[https://github.com/impeccableaslan/smart-CAN/issues] which will be resolved in a timely manner.
