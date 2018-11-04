@@ -76,7 +76,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-void test_smartCAN_LOOP(void);
 /* USER CODE END 0 */
 
 /**
@@ -119,18 +118,22 @@ int main(void)
 	CAN_Initialize();
 	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_TIM_Base_Start_IT(&htim2);
+
+	Can motor3;
+	Device_Initialize(&motor3,0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x201, 8);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	test_smartCAN_LOOP();
+	
   while (1)
   {
 
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		
+		HAL_Delay(50);
+		test_smart_can(&motor3, &hcan1,5000,5000,5000,5000);
   }
   /* USER CODE END 3 */
 
@@ -199,15 +202,15 @@ static void MX_CAN1_Init(void)
 {
 
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Prescaler = 3;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan1.Init.TimeSeg1 = CAN_BS1_9TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_3TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_4TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;
   hcan1.Init.AutoBusOff = DISABLE;
   hcan1.Init.AutoWakeUp = DISABLE;
-  hcan1.Init.AutoRetransmission = ENABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
   hcan1.Init.ReceiveFifoLocked = DISABLE;
   hcan1.Init.TransmitFifoPriority = ENABLE;
   if (HAL_CAN_Init(&hcan1) != HAL_OK)
@@ -409,30 +412,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void change_speed(uint8_t* canTxMsg0,int16_t cm1_iq,int16_t cm2_iq,int16_t cm3_iq,int16_t cm4_iq)
-{
-    canTxMsg0[0] = (uint8_t)(cm1_iq >> 8);
-    canTxMsg0[1] = (uint8_t)cm1_iq;
-    canTxMsg0[2] = (uint8_t)(cm2_iq >> 8);
-    canTxMsg0[3] = (uint8_t)cm2_iq;
-    canTxMsg0[4] = (uint8_t)(cm3_iq >> 8);
-    canTxMsg0[5] = (uint8_t)cm3_iq;
-    canTxMsg0[6] = (uint8_t)(cm4_iq >> 8);
-    canTxMsg0[7] = (uint8_t)cm4_iq;
-}
-void test_smartCAN_LOOP(void)
-{
-	Can motor3 = create_Device(0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x203);
-	Can_Start(motor3, &hcan1);
-	uint8_t canMsg[8];
-	change_speed(canMsg, 10000, 10000, 10000, 10000);
-	while (1)
-	{
-		HAL_Delay(50);
-		Can_Transmit(motor3,&hcan1,canMsg);
-	}
-	// then check receive, output should be stored in motor3.data
-}
 /* USER CODE END 4 */
 
 /**

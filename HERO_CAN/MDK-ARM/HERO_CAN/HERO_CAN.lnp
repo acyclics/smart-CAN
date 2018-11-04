@@ -4,6 +4,7 @@
 "hero_can\main.o"
 "hero_can\stm32f4xx_it.o"
 "hero_can\stm32f4xx_hal_msp.o"
+"hero_can\chasis_test.o"
 "hero_can\stm32f4xx_hal_can.o"
 "hero_can\stm32f4xx_hal_tim.o"
 "hero_can\stm32f4xx_hal_tim_ex.o"
