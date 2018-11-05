@@ -25,6 +25,17 @@ For details refer to complete guide.
 CAN_HandleTypeDef hcan1;
 /* ============================= */
 
+/* pid */
+volatile Encoder CM1Encoder;
+volatile Encoder CM2Encoder;
+volatile Encoder CM3Encoder;
+volatile Encoder CM4Encoder;  
+PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+PID_Regulator_t CM3SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+PID_Regulator_t CM4SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+//---//
+
 /* ========== headers ========== */
 CAN_TxHeaderTypeDef can1TxHeader0;
 CAN_TxHeaderTypeDef test;
@@ -127,16 +138,20 @@ void CanReceiveMsgProcess(CAN_RxHeaderTypeDef *rxHeader,uint8_t* msg)
 		switch(rxHeader->StdId)
 		{
 				case CAN_BUS2_MOTOR1_FEEDBACK_MSG_ID:
-				{                    
+				{
+					(can_count<=50) ? GetEncoderBias(&CM1Encoder ,rxHeader,msg):EncoderProcess(&CM1Encoder ,msg);					
 				}break;
 				case CAN_BUS2_MOTOR2_FEEDBACK_MSG_ID:
 				{
+					(can_count<=50) ? GetEncoderBias(&CM2Encoder ,rxHeader,msg):EncoderProcess(&CM2Encoder ,msg);
 				}break;
 				case CAN_BUS2_MOTOR3_FEEDBACK_MSG_ID:
 				{
+					(can_count<=50) ? GetEncoderBias(&CM3Encoder ,rxHeader,msg):EncoderProcess(&CM3Encoder ,msg);
 				}break;
 				case CAN_BUS2_MOTOR4_FEEDBACK_MSG_ID:
 				{
+					(can_count<=50) ? GetEncoderBias(&CM4Encoder ,rxHeader,msg):EncoderProcess(&CM4Encoder ,msg);
 				}break;
 				case CAN_BUS2_MOTOR5_FEEDBACK_MSG_ID:
 				{
@@ -242,6 +257,7 @@ void Device_Receive(CAN_RxHeaderTypeDef* canRxHeader,uint8_t* canRxMsg)
 }
 void Can_Receive(CAN_HandleTypeDef* hcan, uint8_t* canRxMsg)	// place this in can1/2_rx_isr
 {
+	can_count++;
 	CAN_RxHeaderTypeDef canRxHeader;
 	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&canRxHeader,canRxMsg);
 	Device_Receive(&canRxHeader, canRxMsg);
@@ -277,15 +293,6 @@ void test_smart_can(Can* device, CAN_HandleTypeDef* hcan,int16_t cm1_iq,int16_t 
 //
 //
 /* ========== PID ========== */
-volatile Encoder CM1Encoder;
-volatile Encoder CM2Encoder;
-volatile Encoder CM3Encoder;
-volatile Encoder CM4Encoder;  
-PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-PID_Regulator_t CM3SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-PID_Regulator_t CM4SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-
 void PID_Calc(PID_Regulator_t *pid)
 {
 	pid->err[1] = pid->err[0];
@@ -314,7 +321,7 @@ void EncoderProcess(volatile Encoder *v, uint8_t* msg)
 	}
 	else
 	{
-		if(v->diff < -7000)    //?????????????,?????????
+		if(v->diff < -7000)    
 		{
 			v->round_cnt++;
 			v->ecd_raw_rate = v->diff + 8192;
@@ -329,9 +336,9 @@ void EncoderProcess(volatile Encoder *v, uint8_t* msg)
 			v->ecd_raw_rate = v->diff;
 		}
 	}
-	//?????????????
+	
 	v->ecd_value = v->raw_value + v->round_cnt * 8192;
-	//???????,???????
+	
 	//v->ecd_angle = (float)(v->raw_value - v->ecd_bias)*360/8192 + v->round_cnt * 360;
 	v->ecd_angle = (float)(v->raw_value - v->ecd_bias)*360/8192.0f;
 	v->rate_buf[v->buf_count++] = v->ecd_raw_rate;
@@ -339,7 +346,7 @@ void EncoderProcess(volatile Encoder *v, uint8_t* msg)
 	{
 		v->buf_count = 0;
 	}
-	//???????
+	
 	for(i = 0;i < RATE_BUF_SIZE; i++)
 	{
 		temp_sum += v->rate_buf[i];
@@ -350,7 +357,7 @@ void EncoderProcess(volatile Encoder *v, uint8_t* msg)
 void GetEncoderBias(volatile Encoder *v,CAN_RxHeaderTypeDef *rxHeader,uint8_t* msg)
 {
 
-            v->ecd_bias = (msg[0]<<8)|msg[1];  //????????????  
+            v->ecd_bias = (msg[0]<<8)|msg[1]; 
             v->ecd_value = v->ecd_bias;
             v->last_raw_value = v->ecd_bias;
             v->temp_count++;
@@ -374,12 +381,13 @@ void send_Chassis_Msg(Can* chassis, int16_t cm1_iq,int16_t cm2_iq,int16_t cm3_iq
     canTxMsg0[7] = (uint8_t)cm4_iq;
     Can_Transmit(chassis, &hcan1, canTxMsg0);
 }
-void Motor_Task(Can chassis)
+void set_Chassis_Pid_Speed(Can chassis, int cm1, int cm2, int cm3, int cm4)
 {
-	CM1SpeedPID.ref = 600;
-	CM2SpeedPID.ref = 600;
-	CM3SpeedPID.ref = 600;
-	CM4SpeedPID.ref = 600;
+	HAL_Delay(1);
+	CM1SpeedPID.ref = cm1;
+	CM2SpeedPID.ref = cm2;
+	CM3SpeedPID.ref = cm3;
+	CM4SpeedPID.ref = cm4;
   CM1SpeedPID.fdb = CM1Encoder.filter_rate;
 	CM2SpeedPID.fdb = CM2Encoder.filter_rate;
 	CM3SpeedPID.fdb = CM3Encoder.filter_rate;
@@ -389,45 +397,4 @@ void Motor_Task(Can chassis)
 	PID_Calc(&CM3SpeedPID);
 	PID_Calc(&CM4SpeedPID);
 	send_Chassis_Msg(&chassis, CM1SpeedPID.output*SPEED_OUTPUT_ATTENUATION,CM2SpeedPID.output*SPEED_OUTPUT_ATTENUATION,CM3SpeedPID.output*SPEED_OUTPUT_ATTENUATION,CM4SpeedPID.output*SPEED_OUTPUT_ATTENUATION);	// hold motor please :)
-}
-// test using old way
-int chassis_count = 0;
-void Chassis_ReceiveMsgProcess(CAN_RxHeaderTypeDef *rxHeader,uint8_t* msg)
-{      
-
-	chassis_count++;
-		switch(rxHeader->StdId)
-		{
-				case CAN_BUS2_MOTOR1_FEEDBACK_MSG_ID:
-				{
-				  (chassis_count<=50) ? GetEncoderBias(&CM1Encoder ,rxHeader,msg):EncoderProcess(&CM1Encoder ,msg);
-				}break;
-				case CAN_BUS2_MOTOR2_FEEDBACK_MSG_ID:
-				{
-					(chassis_count<=50) ? GetEncoderBias(&CM2Encoder ,rxHeader,msg):EncoderProcess(&CM2Encoder ,msg);
-				}break;
-				case CAN_BUS2_MOTOR3_FEEDBACK_MSG_ID:
-				{
-					(chassis_count<=50) ? GetEncoderBias(&CM3Encoder ,rxHeader,msg):EncoderProcess(&CM3Encoder ,msg);
-				}break;
-				case CAN_BUS2_MOTOR4_FEEDBACK_MSG_ID:
-				{
-					(chassis_count<=50) ? GetEncoderBias(&CM4Encoder ,rxHeader,msg):EncoderProcess(&CM4Encoder ,msg);
-				}break;
-				case CAN_BUS2_MOTOR5_FEEDBACK_MSG_ID:
-				{
-				}break;
-				
-				case CAN_BUS2_MOTOR6_FEEDBACK_MSG_ID:
-				{	
-				}break;		
-				case CAN_BUS2_MOTOR7_FEEDBACK_MSG_ID:
-				{
-				}break;
-				case CAN_BUS2_MOTOR8_FEEDBACK_MSG_ID:
-				{
-				}break;
-				
-		}
-
 }

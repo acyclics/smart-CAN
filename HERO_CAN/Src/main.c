@@ -119,8 +119,8 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_TIM_Base_Start_IT(&htim2);
 
-	Can motor3;
-	Device_Initialize(&motor3,0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x201, 8);
+	Can chassis;
+	Device_Initialize(&chassis,0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x201, 8);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -132,8 +132,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		HAL_Delay(50);
-		test_smart_can(&motor3, &hcan1,5000,5000,5000,5000);
+		set_Chassis_Pid_Speed(chassis, 0, 0, 0, 0);
   }
   /* USER CODE END 3 */
 
@@ -157,12 +156,11 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 6;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
