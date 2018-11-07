@@ -155,7 +155,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* hcan)
 }
 ```
 
-# Step 2 - Code:
+# Step 2 - How to create a "Can device", transmit, and receive message:
 
 1. Include "can.h" in your file.
 ```c
