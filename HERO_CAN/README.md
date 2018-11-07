@@ -1,4 +1,4 @@
-# Instruction
+# How to create a "Can device" and transmit message
 
 Smart CAN take cares of communicating and receiving for you. The variable "Can" is a high level abstraction of the CAN protocol, the variable can be any electronic device that communicates with CAN. Once CAN bus is initialized, messages received by that Can variable will be stored inside an array of that Can variable.
 
