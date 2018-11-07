@@ -1,12 +1,8 @@
-# How to use Master branch
+# Step 1 - Configure CAN and the stm32 internal clock with cubemx:
 
-Smart CAN is made to be easy to use, so naturally, there aren't that many steps to take before we get CAN running on your stm32. But, depending on your electronic device, the inputs to the functions will change so take care.
+To be written soon. For now, just copy the settings from HERO_CAN.ioc located [here](https://github.com/impeccableaslan/smart-CAN/tree/master/HERO_CAN).
 
-### Step 1 - Configure CAN and the stm32 internal clock with cubemx (skippable if you just copy this repository):
-*To be written soon*
-
-### Step 2 - Code:
-Smart CAN take cares of communicating and receiving for you. The variable "Can" is a high level abstraction of the CAN protocol, the variable can be any electronic device that communicates with CAN. Once CAN bus is initialized, messages received by that Can variable will be stored inside an array of that Can variable.
+# Step 2 - Code:
 
 1. Include "can.h" in your file.
 ```c
@@ -42,13 +38,14 @@ Can device;
 Device_Initialize(device,0x200, CAN_ID_STD, CAN_RTR_DATA, 8, 0x201, 8);
 ```
 
-4. Place the function Can_Receive(parameters) into void CAN1_RX0_IRQHandler(void) which is located in the file "stm32f4xx_it.c".
+4. Edit the function void CAN1_RX0_IRQHandler(void) as shown. This function is located in the file "stm32f4xx_it.c".
 ```c
 uint8_t canRxMsg[8];
 void CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN1_RX0_IRQn 0 */
-	Can_Receive(&hcan1, canRxMsg);
+	HAL_CAN_GetRxMessage(&hcan1,CAN_RX_FIFO0,&can1RxHeader,canRxMsg);
+	CanReceiveMsgProcess(&can1RxHeader,canRxMsg);
   /* USER CODE END CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan1);
   /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
@@ -118,3 +115,7 @@ int main(void)
   }
 }
 ```
+
+# Second method of receiving CAN message
+
+*Development in progress*
