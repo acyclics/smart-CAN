@@ -112,6 +112,6 @@ int main(void)
 }
 ```
 
-# Second method of receiving CAN messahe
+# Second method of receiving CAN message
 
 *Development in progress*
