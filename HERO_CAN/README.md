@@ -112,6 +112,62 @@ int main(void)
 }
 ```
 
+# first method of receiving CAN message
+
+1. Go to "can.c" and locate the function called "CanReceiveMsgProcess".
+2. This function is what is used to do something with the received CAN messages. Inside the function, there's a switch statement that goes through each ID of the received message. So, you would have to figure out what the ID your device sends messages with, then add the ID to the switch statement.
+For example, if my device send messages with the ID '0x200', then in the function "CanReceiveMsgProcess", I would makes the following changes:
+```c
+void CanReceiveMsgProcess(CAN_RxHeaderTypeDef *rxHeader,uint8_t* msg)
+{      
+
+	can_count++;
+		switch(rxHeader->StdId)
+		{
+				case 0x200:
+				{
+					// I made a new statement for 0x200 here
+					function_to_do_something_here();
+				}break;
+				case CAN_BUS2_MOTOR1_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				case CAN_BUS2_MOTOR2_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				case CAN_BUS2_MOTOR3_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				case CAN_BUS2_MOTOR4_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				case CAN_BUS2_MOTOR5_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				
+				case CAN_BUS2_MOTOR6_FEEDBACK_MSG_ID:
+				{	
+					
+				}break;		
+				case CAN_BUS2_MOTOR7_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				case CAN_BUS2_MOTOR8_FEEDBACK_MSG_ID:
+				{
+					
+				}break;
+				
+		}
+
+}
+```
+
 # Second method of receiving CAN message
 
 *Development in progress*
