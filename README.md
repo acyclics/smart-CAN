@@ -6,7 +6,7 @@ Here is what each branch contain
 ### Master:
 Stable version of smart CAN
 ### experimental:
-Cutting edge, development-in-progress version of smart CAN
+Cutting edge, development-in-progress version of smart CAN. This branch also contain other stuff to use with CAN such as PID.
 ### Stable(experimented):
 Stable, but stability not guaranteed, newer than Master's version of smart CAN
 
