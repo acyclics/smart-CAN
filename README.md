@@ -3,9 +3,12 @@
 Suitable for the stm32f4xx series, smart CAN is an easy to use, robust, CAN implementation. You can easily add devices to use the CAN protocol and the code takes care of all the devices itself.
 
 Here is what each branch contain
-1. ###Master: Stable version of smart CAN
-2. ###experimental: Cutting edge, development-in-progress version of smart CAN
-3. ###Stable(experimented): Stable, but stability not guaranteed, newer than Master's version of smart CAN
+### Master:
+Stable version of smart CAN
+### experimental:
+Cutting edge, development-in-progress version of smart CAN
+### Stable(experimented):
+Stable, but stability not guaranteed, newer than Master's version of smart CAN
 
 # How to use Master branch
 
