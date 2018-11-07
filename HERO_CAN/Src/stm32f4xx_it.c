@@ -38,10 +38,6 @@
 /* USER CODE BEGIN 0 */
 #include "can.h"
 extern uint8_t canRxMsg[8];
-extern uint8_t canTxMsg0[8];
-extern uint8_t canTxMsg1[8];
-extern CAN_TxHeaderTypeDef can1TxHeader0;
-extern CAN_TxHeaderTypeDef can1TxHeader1;
 extern CAN_RxHeaderTypeDef can1RxHeader;
 /* USER CODE END 0 */
 
